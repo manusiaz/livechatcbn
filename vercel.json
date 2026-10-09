@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "rm -rf public && mkdir -p public && cp -r widget demo public/",
+  "outputDirectory": "public",
+  "regions": ["sin1"],
+  "functions": { "api/talita/[action].js": { "maxDuration": 60 } },
+  "rewrites": [{ "source": "/", "destination": "/demo/index.html" }],
+  "headers": [
+    { "source": "/widget/(.*)", "headers": [
+      { "key": "Access-Control-Allow-Origin", "value": "*" },
+      { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=3600" }
+    ] }
+  ]
+}

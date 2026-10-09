@@ -1,2 +1,5 @@
 mock-server/data/
 node_modules/
+public/
+.vercel/
+.env*

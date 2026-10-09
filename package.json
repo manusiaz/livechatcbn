@@ -1,0 +1,9 @@
+{
+  "name": "livechatcbn",
+  "private": true,
+  "description": "Widget live chat Talita (Asisten AI CBN) + API",
+  "scripts": {
+    "dev": "node mock-server/server.js"
+  },
+  "engines": { "node": ">=20" }
+}

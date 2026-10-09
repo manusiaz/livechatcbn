@@ -235,7 +235,10 @@
       var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', full = '', meta = {};
       function pump() {
         return reader.read().then(function (res) {
-          if (res.done) return Object.assign(meta, { reply: full });
+          if (res.done) {
+            if (meta.error && !full) throw new Error(meta.error);
+            return Object.assign(meta, { reply: full });
+          }
           buf += dec.decode(res.value, { stream: true });
           var parts = buf.split(/\r?\n\r?\n/); buf = parts.pop();
           parts.forEach(function (ev) {
@@ -249,6 +252,7 @@
                 if (o.reply != null) full = String(o.reply);
                 if (o.message_id) meta.message_id = o.message_id;
                 if (o.actions) meta.actions = o.actions;
+                if (o.error) meta.error = o.error;
               } catch (e) { full += d; onDelta(full); }
             });
           });
