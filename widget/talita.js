@@ -145,15 +145,15 @@
     '.send{flex:none;height:46px;padding:0 18px;border-radius:999px;border:none;background:var(--priBg);color:var(--priInk);font-size:13.5px;font-weight:800;cursor:pointer}',
     '.send:disabled{opacity:.45;cursor:default}',
     // form modal
-    '.fwrap{position:fixed;inset:0;z-index:2147483004;display:grid;place-items:center;padding:14px}',
-    '.fscrim{position:fixed;inset:0;z-index:2147483003;background:rgba(4,8,16,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}',
-    '.form{width:min(460px,calc(100vw - 28px));max-height:calc(100dvh - 28px);overflow-y:auto;border-radius:22px;background:var(--fCard);color:var(--fInk);border:1px solid var(--fLine);box-shadow:0 30px 90px rgba(0,0,0,.45);animation:tlHeroIn .35s cubic-bezier(.2,.8,.2,1) both}',
-    '.fh{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:22px 22px 0}',
+    // form data diri menggantikan isi panel (bukan pop up di atas pop up)
+    '.fview{position:relative;flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:none;color:var(--fInk);animation:tlMsg .35s cubic-bezier(.2,.8,.2,1) both}',
+    '.fview::-webkit-scrollbar{display:none}',
+    '.fh{display:flex;align-items:flex-start;gap:12px;padding:18px 18px 0}',
     '.fk{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fAcc)}',
     '.ft{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-top:6px}',
     '.fs{font-size:13.5px;line-height:1.55;color:var(--fSub);margin-top:6px}',
     '.fx{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--fLine);background:none;color:var(--fInk);font-size:18px;cursor:pointer}',
-    '.fb{padding:18px 22px 22px;display:flex;flex-direction:column;gap:14px}',
+    '.fb{padding:16px 18px 20px;display:flex;flex-direction:column;gap:14px}',
     '.fsel{display:flex;flex-wrap:wrap;gap:6px}',
     '.fsel span{padding:6px 11px;border-radius:999px;background:var(--fChip);color:var(--fAcc);font-size:12px;font-weight:700}',
     '.fwarn{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:12px;background:#FDECEC;border:1px solid #F5C2C2;color:#A61B1B;font-size:13px;font-weight:700;line-height:1.45}',
@@ -383,7 +383,7 @@
 
   Widget.prototype.buildPanel = function () {
     var self = this, V = this.V();
-    var panel = el('div', { class: 'panel', role: 'dialog', 'aria-label': 'Chat Talita' });
+    var panel = this.panelEl = el('div', { class: 'panel', role: 'dialog', 'aria-label': 'Chat Talita' });
     if (this.T.dark) { panel.appendChild(el('div', { class: 'glow a', 'aria-hidden': 'true' })); panel.appendChild(el('div', { class: 'glow b', 'aria-hidden': 'true' })); }
     this.statusEl = el('span', { text: 'Online · menunggu jawaban Anda' });
     panel.appendChild(el('div', { class: 'head' }, [
@@ -407,7 +407,7 @@
     this.ta.addEventListener('input', function () { self.syncSend(); });
     this.ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); self.send(); } });
     this.sendBtn = el('button', { class: 'send', type: 'button', 'aria-label': 'Kirim', text: 'Kirim', disabled: true, onclick: function () { self.send(); } });
-    panel.appendChild(el('div', { class: 'foot' }, [
+    panel.appendChild(this.footEl = el('div', { class: 'foot' }, [
       this.optsEl, this.actsEl,
       el('div', { class: 'live lbl' }, [el('span', { class: 'dot' }), 'Live agent · tanya langsung, dijawab AI']),
       this.errEl,
@@ -555,6 +555,7 @@
 
   Widget.prototype.restart = function () {
     this.track('restart', { step: this.step });
+    this.closeForm();
     var lead = this.lead;
     this.reset(); this.lead = lead;
     if (this.listEl) this.listEl.textContent = '';
@@ -624,19 +625,18 @@
         submitErr.textContent = 'Gagal mengirim data. Periksa koneksi lalu coba lagi.'; submitErr.hidden = false;
       });
     });
-    var x = el('button', { class: 'fx', type: 'button', 'aria-label': 'Tutup', text: '×', onclick: function () { self.closeForm(); } });
-    var card = el('div', { class: 'form', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'tl-f-title' }, [
-      el('div', { class: 'fh' }, [el('div', null, [
+    var back = el('button', { class: 'fx', type: 'button', 'aria-label': 'Kembali ke chat', title: 'Kembali ke chat', text: '←', onclick: function () { self.closeForm(); } });
+    var view = el('div', { class: 'fview', role: 'region', 'aria-labelledby': 'tl-f-title' }, [
+      el('div', { class: 'fh' }, [back, el('div', { style: 'min-width:0;flex:1' }, [
         el('div', { class: 'fk', text: pick ? 'Langkah terakhir' : 'Live chat' }),
         el('div', { class: 'ft', id: 'tl-f-title', text: pick ? 'Isi data diri Anda' : 'Isi data diri dulu, ya' }),
         el('div', { class: 'fs', text: pick ? 'Tim CBN akan menghubungi Anda untuk membahas layanan yang Anda pilih.' : 'Supaya Talita dan tim CBN bisa menindaklanjuti percakapan Anda.' })
-      ]), x]),
+      ])]),
       body
     ]);
-    var scrim = el('div', { class: 'fscrim', onclick: function () { self.closeForm(); } });
-    var wrap = el('div', { class: 'fwrap', onclick: function (e) { if (e.target === wrap) self.closeForm(); } }, [card]);
-    this.formEl = [scrim, wrap];
-    this.box.appendChild(scrim); this.box.appendChild(wrap);
+    this.formEl = view;
+    this.pane.hidden = true; this.footEl.hidden = true;
+    this.panelEl.appendChild(view);
     paint();
     setTimeout(function () { inputs.name.focus(); }, 40);
     this.track('lead_form_open', { purpose: pick ? 'recommendation' : 'chat_form' });
@@ -644,8 +644,9 @@
 
   Widget.prototype.closeForm = function () {
     if (!this.formEl) return;
-    this.formEl.forEach(function (n) { n.remove(); });
+    this.formEl.remove();
     this.formEl = null;
+    if (this.pane) { this.pane.hidden = false; this.footEl.hidden = false; this.scroll(); }
   };
 
   Widget.prototype.submitLead = function (lead, source) {
