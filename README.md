@@ -53,6 +53,10 @@ Talita.identify({ name, email, company, phone }); // lewati form kalau user suda
 
 Detail payload: [docs/API.md](docs/API.md).
 
+## Untuk tim lain: tinggal colok API AI dan API dashboard
+
+Lihat [docs/INTEGRASI.md](docs/INTEGRASI.md). Cukup isi env `UPSTREAM_*` dan `DASHBOARD_*` di Vercel, lalu redeploy.
+
 ## Deploy (Vercel + Supabase)
 
 Vercel menjalankan `vercel.json`: file `widget/` dan `demo/` disalin ke `public/`, fungsi API di region `sin1` (dekat Supabase Singapore).
@@ -66,6 +70,7 @@ Env di Vercel:
 | `SITE_KEYS` | Site key yang dipakai widget, dipisah koma (default `pk_test_demo`) |
 | `ALLOW_ORIGIN` | Domain website, mis. `https://www.cbn.id,https://cbn.id` (default `*`) |
 | `UPSTREAM_URL`, `UPSTREAM_KEY`, `UPSTREAM_MODEL` | API AI (format OpenAI `/chat/completions`). Kosong = balasan mock |
+| `DASHBOARD_URL`, `DASHBOARD_KEY` | API dashboard yang menerima setiap record (session, lead, message, event). Opsional |
 
 Tabel Supabase punya RLS aktif tanpa policy, jadi hanya bisa ditulis/dibaca lewat secret key (API ini dan dashboard sisi server).
 
